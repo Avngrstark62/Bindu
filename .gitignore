@@ -198,3 +198,5 @@ examples/.pebbling/*
 
 # Auto-generated version file (generated during build)
 bindu/_version.py
+
+dev/*
