@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  hydra-postgres:
+    image: postgres:15
+    container_name: hydra-postgres
+    environment:
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: hydra
+      POSTGRES_DB: hydra
+    volumes:
+      - hydra-db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # avoid clashing with local postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydra"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  hydra-migrate:
+    image: oryd/hydra:v2.2.0
+    container_name: hydra-migrate
+    depends_on:
+      hydra-postgres:
+        condition: service_healthy
+    command: migrate sql -e --yes
+    environment:
+      DSN: postgres://hydra:hydra@hydra-postgres:5432/hydra?sslmode=disable
+
+  hydra:
+    image: oryd/hydra:v2.2.0
+    container_name: hydra
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    command: serve all --dev --config /etc/hydra/hydra.yml
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+    environment:
+      DSN: postgres://hydra:hydra@hydra-postgres:5432/hydra?sslmode=disable
+    volumes:
+      - ./config/hydra:/etc/hydra
+
+volumes:
+  hydra-db:
