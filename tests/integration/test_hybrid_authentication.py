@@ -319,6 +319,7 @@ class TestHybridAuthClient:
                 await client.initialize()
 
                 assert client.access_token == "test_token"
+                assert client.credentials is not None
                 assert client.credentials.client_id == mock_did_extension.did
 
     @pytest.mark.asyncio

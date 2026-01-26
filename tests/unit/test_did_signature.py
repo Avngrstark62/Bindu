@@ -301,3 +301,69 @@ class TestGetPublicKeyFromHydra:
         public_key = await get_public_key_from_hydra("did:key:test", mock_hydra)
 
         assert public_key is None
+
+    async def test_get_public_key_exception(self):
+        """Test exception handling in get_public_key_from_hydra."""
+        from bindu.utils.did_signature import get_public_key_from_hydra
+
+        mock_hydra = AsyncMock()
+        mock_hydra.get_oauth_client.side_effect = Exception("Connection error")
+
+        public_key = await get_public_key_from_hydra("did:key:test", mock_hydra)
+
+        assert public_key is None
+
+
+class TestVerifySignatureException:
+    """Test verify_signature exception handling."""
+
+    @patch("base58.b58decode")
+    def test_verify_signature_exception_handling(self, mock_b58decode):
+        """Test exception handling in verify_signature."""
+        from bindu.utils.did_signature import verify_signature
+        import time
+
+        # Make b58decode raise an exception
+        mock_b58decode.side_effect = Exception("Decoding error")
+
+        body = {"test": "data"}
+        signature = "invalid_signature"
+        did = "did:key:test"
+        timestamp = int(time.time())
+        public_key = "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"  # pragma: allowlist secret
+
+        result = verify_signature(body, signature, did, timestamp, public_key)
+
+        assert result is False
+
+
+class TestCreateSignedRequestHeaders:
+    """Test creating signed request headers."""
+
+    def test_create_signed_request_headers(self):
+        """Test creating complete signed request headers."""
+        from bindu.utils.did_signature import create_signed_request_headers
+
+        mock_did_ext = MagicMock()
+        mock_did_ext.sign_message.return_value = "test_signature"
+
+        body = {"test": "data"}
+        did = "did:key:test"
+        bearer_token = "test_bearer_token"  # pragma: allowlist secret
+
+        with patch("bindu.utils.did_signature.int") as mock_int:
+            mock_int.return_value = 1234567890
+
+            headers = create_signed_request_headers(
+                body, did, mock_did_ext, bearer_token
+            )
+
+            assert "Authorization" in headers
+            assert (
+                headers["Authorization"] == "Bearer test_bearer_token"
+            )  # pragma: allowlist secret
+            assert "Content-Type" in headers
+            assert headers["Content-Type"] == "application/json"
+            assert "X-DID" in headers
+            assert "X-DID-Signature" in headers
+            assert "X-DID-Timestamp" in headers

@@ -30,7 +30,9 @@ class TestGetClientCredentialsToken:
             }
         )
 
-        with patch("bindu.utils.token_utils.aiohttp.ClientSession") as mock_session_class:
+        with patch(
+            "bindu.utils.token_utils.aiohttp.ClientSession"
+        ) as mock_session_class:
             mock_session = MagicMock()
             mock_session.__aenter__ = AsyncMock(return_value=mock_session)
             mock_session.__aexit__ = AsyncMock(return_value=None)
@@ -43,11 +45,15 @@ class TestGetClientCredentialsToken:
             mock_session_class.return_value = mock_session
 
             result = await get_client_credentials_token(
-                "test-client", "test-secret", "agent:read agent:write"  # pragma: allowlist secret
+                "test-client",
+                "test-secret",
+                "agent:read agent:write",  # pragma: allowlist secret
             )
 
             assert result is not None
-            assert result["access_token"] == "test_token_123"  # pragma: allowlist secret
+            assert (
+                result["access_token"] == "test_token_123"
+            )  # pragma: allowlist secret
             assert result["token_type"] == "Bearer"
             assert result["expires_in"] == 3600
 
@@ -64,7 +70,9 @@ class TestGetClientCredentialsToken:
             }
         )
 
-        with patch("bindu.utils.token_utils.aiohttp.ClientSession") as mock_session_class:
+        with patch(
+            "bindu.utils.token_utils.aiohttp.ClientSession"
+        ) as mock_session_class:
             mock_session = MagicMock()
             mock_session.__aenter__ = AsyncMock(return_value=mock_session)
             mock_session.__aexit__ = AsyncMock(return_value=None)
@@ -76,7 +84,9 @@ class TestGetClientCredentialsToken:
 
             mock_session_class.return_value = mock_session
 
-            result = await get_client_credentials_token("test-client", "test-secret")  # pragma: allowlist secret
+            result = await get_client_credentials_token(
+                "test-client", "test-secret"
+            )  # pragma: allowlist secret
 
             assert result is not None
             assert "access_token" in result
@@ -88,7 +98,9 @@ class TestGetClientCredentialsToken:
         mock_response.status = 401
         mock_response.text = AsyncMock(return_value="Unauthorized")
 
-        with patch("bindu.utils.token_utils.aiohttp.ClientSession") as mock_session_class:
+        with patch(
+            "bindu.utils.token_utils.aiohttp.ClientSession"
+        ) as mock_session_class:
             mock_session = MagicMock()
             mock_session.__aenter__ = AsyncMock(return_value=mock_session)
             mock_session.__aexit__ = AsyncMock(return_value=None)
@@ -100,17 +112,23 @@ class TestGetClientCredentialsToken:
 
             mock_session_class.return_value = mock_session
 
-            result = await get_client_credentials_token("invalid-client", "invalid-secret")  # pragma: allowlist secret
+            result = await get_client_credentials_token(
+                "invalid-client", "invalid-secret"
+            )  # pragma: allowlist secret
 
             assert result is None
 
     @pytest.mark.asyncio
     async def test_get_token_exception(self):
         """Test handling exception during token request."""
-        with patch("bindu.utils.token_utils.aiohttp.ClientSession") as mock_session_class:
+        with patch(
+            "bindu.utils.token_utils.aiohttp.ClientSession"
+        ) as mock_session_class:
             mock_session_class.side_effect = Exception("Connection error")
 
-            result = await get_client_credentials_token("test-client", "test-secret")  # pragma: allowlist secret
+            result = await get_client_credentials_token(
+                "test-client", "test-secret"
+            )  # pragma: allowlist secret
 
             assert result is None
 
@@ -148,9 +166,7 @@ class TestGetAgentTokenFromCredentialsFile:
     @pytest.mark.asyncio
     async def test_get_agent_token_no_credentials(self):
         """Test when no credentials found."""
-        with patch(
-            "bindu.utils.token_utils.load_agent_credentials", return_value=None
-        ):
+        with patch("bindu.utils.token_utils.load_agent_credentials", return_value=None):
             token = await get_agent_token_from_credentials_file(
                 "test-agent", Path("/tmp/.bindu")
             )
@@ -247,7 +263,9 @@ class TestCreateBearerHeader:
         """Test creating authorization header."""
         header = create_bearer_header("test_token_123")  # pragma: allowlist secret
 
-        assert header == {"Authorization": "Bearer test_token_123"}  # pragma: allowlist secret
+        assert header == {
+            "Authorization": "Bearer test_token_123"
+        }  # pragma: allowlist secret
 
 
 class TestValidateTokenAndGetSubject:
@@ -260,7 +278,9 @@ class TestValidateTokenAndGetSubject:
             "bindu.utils.token_utils.introspect_token",
             new=AsyncMock(return_value={"active": True, "sub": "user-123"}),
         ):
-            subject = await validate_token_and_get_subject("test_token")  # pragma: allowlist secret
+            subject = await validate_token_and_get_subject(
+                "test_token"
+            )  # pragma: allowlist secret
 
             assert subject == "user-123"
 
@@ -271,7 +291,9 @@ class TestValidateTokenAndGetSubject:
             "bindu.utils.token_utils.introspect_token",
             new=AsyncMock(return_value={"active": False}),
         ):
-            subject = await validate_token_and_get_subject("test_token")  # pragma: allowlist secret
+            subject = await validate_token_and_get_subject(
+                "test_token"
+            )  # pragma: allowlist secret
 
             assert subject is None
 
@@ -282,6 +304,8 @@ class TestValidateTokenAndGetSubject:
             "bindu.utils.token_utils.introspect_token",
             new=AsyncMock(return_value=None),
         ):
-            subject = await validate_token_and_get_subject("test_token")  # pragma: allowlist secret
+            subject = await validate_token_and_get_subject(
+                "test_token"
+            )  # pragma: allowlist secret
 
             assert subject is None
