@@ -135,20 +135,6 @@
 				});
 		}
 
-		if (page.url.searchParams.has("model")) {
-			await settings
-				.instantSet({
-					activeModel: page.url.searchParams.get("model") ?? $settings.activeModel,
-				})
-				.then(async () => {
-					const query = new URLSearchParams(page.url.searchParams.toString());
-					query.delete("model");
-					await goto(`${base}/?${query.toString()}`, {
-						invalidateAll: true,
-					});
-				});
-		}
-
 		if (page.url.searchParams.has("token")) {
 			const token = page.url.searchParams.get("token");
 

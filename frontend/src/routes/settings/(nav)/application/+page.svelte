@@ -26,19 +26,6 @@
 	function setShareWithAuthors(v: boolean) {
 		settings.update((s) => ({ ...s, shareConversationsWithModelAuthors: v }));
 	}
-	function getDisableStream() {
-		return $settings.disableStream;
-	}
-	function setDisableStream(v: boolean) {
-		settings.update((s) => ({ ...s, disableStream: v }));
-	}
-	function getDirectPaste() {
-		return $settings.directPaste;
-	}
-	function setDirectPaste(v: boolean) {
-		settings.update((s) => ({ ...s, directPaste: v }));
-	}
-
 	const client = useAPIClient();
 
 	let OPENAI_BASE_URL = $state<string | null>(null);
@@ -181,30 +168,6 @@
 						/>
 					</div>
 				{/if}
-
-				<div class="flex items-start justify-between py-3">
-					<div>
-						<div class="text-[13px] font-medium text-gray-800 dark:text-gray-200">
-							Disable streaming tokens
-						</div>
-						<p class="text-[12px] text-gray-500 dark:text-gray-400">
-							Show responses only when complete.
-						</p>
-					</div>
-					<Switch name="disableStream" bind:checked={getDisableStream, setDisableStream} />
-				</div>
-
-				<div class="flex items-start justify-between py-3">
-					<div>
-						<div class="text-[13px] font-medium text-gray-800 dark:text-gray-200">
-							Paste text directly
-						</div>
-						<p class="text-[12px] text-gray-500 dark:text-gray-400">
-							Paste long text directly into chat instead of a file.
-						</p>
-					</div>
-					<Switch name="directPaste" bind:checked={getDirectPaste, setDirectPaste} />
-				</div>
 
 				<!-- Theme selector -->
 				<div class="flex items-start justify-between py-3">

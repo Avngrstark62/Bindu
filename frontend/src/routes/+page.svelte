@@ -9,8 +9,6 @@
 	import ChatWindow from "$lib/components/chat/ChatWindow.svelte";
 	import { ERROR_MESSAGES, error } from "$lib/stores/errors";
 	import { pendingMessage } from "$lib/stores/pendingMessage";
-	import { useSettingsStore } from "$lib/stores/settings.js";
-	import { findCurrentModel } from "$lib/utils/models";
 	import { sanitizeUrlParam } from "$lib/utils/urlParams";
 	import { onMount, tick } from "svelte";
 	import { loading } from "$lib/stores/loading.js";
@@ -23,24 +21,13 @@
 	let files: File[] = $state([]);
 	let draft = $state("");
 
-	const settings = useSettingsStore();
-
 	async function createConversation(message: string) {
 		try {
 			$loading = true;
 
-			// check if $settings.activeModel is a valid model
-			// else check if it's an assistant, and use that model
-			// else use the first model
-
-			const validModels = data.models.map((model) => model.id);
-
-			let model;
-			if (validModels.includes($settings.activeModel)) {
-				model = $settings.activeModel;
-			} else {
-				model = data.models[0].id;
-			}
+			// Use the default (and only) model
+			const model = data.models[0].id;
+			
 			const res = await fetch(`${base}/conversation`, {
 				method: "POST",
 				headers: {
@@ -48,7 +35,6 @@
 				},
 				body: JSON.stringify({
 					model,
-					preprompt: $settings.customPrompts[$settings.activeModel],
 				}),
 			});
 
@@ -141,7 +127,7 @@
 		}
 	});
 
-	let currentModel = $derived(findCurrentModel(data.models, data.oldModels, $settings.activeModel));
+	let currentModel = $derived(data.models[0]);
 </script>
 
 <svelte:head>
@@ -159,10 +145,9 @@
 	/>
 {:else}
 	<div class="mx-auto my-20 max-w-xl rounded-xl border p-6 text-center dark:border-gray-700">
-		<h2 class="mb-2 text-xl font-semibold">No models available</h2>
+		<h2 class="mb-2 text-xl font-semibold">Backend not configured</h2>
 		<p class="text-gray-600 dark:text-gray-300">
-			No chat models are configured. Set `OPENAI_BASE_URL` and ensure the server can reach the
-			endpoint, then reload. If unset, the app defaults to the Hugging Face router.
+			Set BINDU_BASE_URL in your environment to connect to your Bindu backend.
 		</p>
 	</div>
 {/if}
